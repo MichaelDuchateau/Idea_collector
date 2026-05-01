@@ -1,0 +1,128 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    tags:     ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: '--target aarch64-apple-darwin'
+            target: aarch64-apple-darwin
+          - platform: macos-latest
+            args: '--target x86_64-apple-darwin'
+            target: x86_64-apple-darwin
+          - platform: windows-latest
+            args: ''
+            target: ''
+
+    runs-on: ${{ matrix.platform }}
+    defaults:
+      run:
+        working-directory: 'Claude generated files/pipeline-app'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'Claude generated files/pipeline-app/package-lock.json'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "'Claude generated files/pipeline-app/src-tauri' -> target"
+
+      # macOS: install Xcode build tools
+      - name: Install macOS dependencies
+        if: matrix.platform == 'macos-latest'
+        run: |
+          brew install pkg-config
+
+      # Windows: install WebView2 (usually pre-installed on GitHub runners)
+      - name: Install Windows dependencies
+        if: matrix.platform == 'windows-latest'
+        run: |
+          echo "WebView2 is pre-installed on GitHub Windows runners"
+
+      - name: Install npm dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS code signing — set these secrets in your repo if you want signed builds:
+          # APPLE_CERTIFICATE:            base64-encoded .p12 file
+          # APPLE_CERTIFICATE_PASSWORD:   .p12 password
+          # APPLE_SIGNING_IDENTITY:       e.g. "Developer ID Application: Your Name (TEAMID)"
+          # APPLE_ID:                     your Apple ID email
+          # APPLE_PASSWORD:               app-specific password
+          # APPLE_TEAM_ID:                your Apple Developer Team ID
+        with:
+          projectPath: 'Claude generated files/pipeline-app'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Pipeline ${{ github.ref_name }}'
+          releaseBody: 'See the [CHANGELOG](CHANGELOG.md) for details.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  # Combine the two macOS builds into a universal binary
+  macos-universal:
+    needs: build
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    defaults:
+      run:
+        working-directory: 'Claude generated files/pipeline-app'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'Claude generated files/pipeline-app/package-lock.json'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "'Claude generated files/pipeline-app/src-tauri' -> target"
+
+      - name: Install npm dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build universal macOS binary
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: 'Claude generated files/pipeline-app'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Pipeline ${{ github.ref_name }}'
+          releaseDraft: true
+          prerelease: false
+          args: '--target universal-apple-darwin'
