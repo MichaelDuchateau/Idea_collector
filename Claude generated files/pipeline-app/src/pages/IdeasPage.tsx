@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import IdeasTable from '../components/ideas/IdeasTable';
 import IdeaDetail from '../components/ideas/IdeaDetail';
@@ -13,8 +14,16 @@ interface Filters {
 
 export default function IdeasPage() {
   const { ideas, loadIdeas, settings } = useAppStore();
-  const [selectedId, setSelectedId]   = useState<number | null>(null);
+  const location = useLocation();
+  const [selectedId, setSelectedId]   = useState<number | null>(
+    (location.state as { selectId?: number } | null)?.selectId ?? null
+  );
   const [filters, setFilters]         = useState<Filters>({});
+
+  useEffect(() => {
+    const id = (location.state as { selectId?: number } | null)?.selectId;
+    if (id != null) setSelectedId(id);
+  }, [location.state]);
 
   const thresholds = {
     score_threshold_green: settings?.score_threshold_green ?? 75,

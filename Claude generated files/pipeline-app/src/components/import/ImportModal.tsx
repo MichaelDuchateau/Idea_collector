@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ParsedMarkdownIdea } from '../../types';
-import { pickImportFiles, pickImportFolder, parseMarkdownFiles } from '../../lib/db';
+import { pickImportFiles, pickImportFolder, listMarkdownInFolder, parseMarkdownFiles } from '../../lib/db';
 import ImportPreview from './ImportPreview';
 
 interface Props {
@@ -11,25 +11,30 @@ interface Props {
 export default function ImportModal({ onClose, onImported }: Props) {
   const [parsed,  setParsed]  = useState<ParsedMarkdownIdea[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [status,  setStatus]  = useState('');
   const [error,   setError]   = useState<string | null>(null);
 
   const pick = async (mode: 'files' | 'folder') => {
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setStatus('');
     try {
       let paths: string[] = [];
       if (mode === 'files') {
         paths = await pickImportFiles();
       } else {
         const folder = await pickImportFolder();
-        if (folder) paths = [folder];
+        if (folder) {
+          setStatus('Scanning folder…');
+          paths = await listMarkdownInFolder(folder);
+        }
       }
-      if (paths.length === 0) { setLoading(false); return; }
+      if (paths.length === 0) { setLoading(false); setStatus(''); return; }
+      setStatus(`Parsing ${paths.length} file${paths.length !== 1 ? 's' : ''}…`);
       const results = await parseMarkdownFiles(paths);
       setParsed(results);
     } catch (e) {
       setError(String(e));
     } finally {
-      setLoading(false);
+      setLoading(false); setStatus('');
     }
   };
 
@@ -46,23 +51,22 @@ export default function ImportModal({ onClose, onImported }: Props) {
             <div className="flex flex-col gap-4">
               <p className="text-sm text-gray-600">Choose how to import ideas from Markdown files:</p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => pick('files')}
-                  disabled={loading}
+                <button onClick={() => pick('files')} disabled={loading}
                   className="flex-1 py-8 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors disabled:opacity-50"
                 >
-                  📄 Pick files
+                  <div className="text-2xl mb-1">📄</div>
+                  Pick files
                 </button>
-                <button
-                  onClick={() => pick('folder')}
-                  disabled={loading}
+                <button onClick={() => pick('folder')} disabled={loading}
                   className="flex-1 py-8 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors disabled:opacity-50"
                 >
-                  📁 Pick folder
+                  <div className="text-2xl mb-1">📁</div>
+                  Pick folder<br />
+                  <span className="text-xs text-gray-400">(all .md files, recursive)</span>
                 </button>
               </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {loading && <p className="text-sm text-gray-400 text-center">Parsing files…</p>}
+              {error  && <p className="text-sm text-red-600">{error}</p>}
+              {status && <p className="text-sm text-gray-400 text-center animate-pulse">{status}</p>}
             </div>
           ) : (
             <ImportPreview

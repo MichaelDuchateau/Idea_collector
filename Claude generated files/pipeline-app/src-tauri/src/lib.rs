@@ -53,6 +53,7 @@ pub fn run() {
             commands::scores::delete_criterion,
             commands::import::pick_import_files,
             commands::import::pick_import_folder,
+            commands::import::list_markdown_in_folder,
             commands::import::parse_markdown_files,
             commands::import::import_ideas,
             commands::obsidian::obsidian_test_connection,

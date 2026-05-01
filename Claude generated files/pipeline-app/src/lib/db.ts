@@ -62,6 +62,9 @@ export const pickImportFiles = () =>
 export const pickImportFolder = () =>
   invoke<string | null>('pick_import_folder');
 
+export const listMarkdownInFolder = (folder: string) =>
+  invoke<string[]>('list_markdown_in_folder', { folder });
+
 export const parseMarkdownFiles = (paths: string[]) =>
   invoke<ParsedMarkdownIdea[]>('parse_markdown_files', { paths });
 

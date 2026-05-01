@@ -4,8 +4,9 @@ import { getCriteria, saveSetting } from '../lib/db';
 import { useAppStore } from '../store/appStore';
 import ScorecardEditor from '../components/settings/ScorecardEditor';
 import ThresholdEditor from '../components/settings/ThresholdEditor';
+import ObsidianSettings from '../components/settings/ObsidianSettings';
 
-type Tab = 'scorecard' | 'thresholds' | 'general';
+type Tab = 'scorecard' | 'thresholds' | 'obsidian' | 'general';
 
 export default function SettingsPage() {
   const { settings, loadSettings } = useAppStore();
@@ -32,6 +33,7 @@ export default function SettingsPage() {
   const TABS: { key: Tab; label: string }[] = [
     { key: 'scorecard',  label: 'Scorecard' },
     { key: 'thresholds', label: 'Thresholds' },
+    { key: 'obsidian',   label: 'Obsidian' },
     { key: 'general',    label: 'General' },
   ];
 
@@ -60,6 +62,13 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 mb-4">Scorecard Criteria</h2>
           <ScorecardEditor criteria={criteria} onChanged={loadCriteria} />
+        </div>
+      )}
+
+      {tab === 'obsidian' && settings && (
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Obsidian Integration</h2>
+          <ObsidianSettings settings={settings} onChanged={loadSettings} />
         </div>
       )}
 

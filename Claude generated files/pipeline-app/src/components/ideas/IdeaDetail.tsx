@@ -3,6 +3,7 @@ import type { Idea, ScoresByCriterion, ActivityLogEntry, IdeaStage, AppSettings,
 import { getIdea, getScoresForIdea, getActivityLog, updateIdea, moveIdeaStage, getCriteria } from '../../lib/db';
 import IdeaStatusBadge from './IdeaStatusBadge';
 import IdeaEditor from './IdeaEditor';
+import ActivityLog from './ActivityLog';
 import ScorecardPanel from '../scoring/ScorecardPanel';
 import ScoreBreakdown from '../scoring/ScoreBreakdown';
 
@@ -185,20 +186,10 @@ export default function IdeaDetail({ ideaId, onBack, onSaved, currentUser, setti
       </div>
 
       {/* Activity log */}
-      {log.length > 0 && (
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Activity</p>
-          <ul className="space-y-2">
-            {log.map(entry => (
-              <li key={entry.id} className="text-xs text-gray-500 flex gap-2">
-                <span className="text-gray-300">{entry.created_at.slice(0, 16)}</span>
-                <span className="font-medium text-gray-600 capitalize">{entry.event_type.replace('_', ' ')}</span>
-                {entry.actor && <span>by {entry.actor}</span>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Activity</p>
+        <ActivityLog entries={log} />
+      </div>
     </div>
   );
 }

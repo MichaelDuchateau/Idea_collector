@@ -1,6 +1,7 @@
 use crate::AppDb;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ParsedMarkdownIdea {
@@ -45,6 +46,26 @@ pub async fn pick_import_folder(app: tauri::AppHandle) -> Result<Option<String>,
     use tauri_plugin_dialog::DialogExt;
     let path = app.dialog().file().blocking_pick_folder();
     Ok(path.and_then(|p| p.as_path().map(|p| p.to_string_lossy().to_string())))
+}
+
+#[tauri::command]
+pub async fn list_markdown_in_folder(folder: String) -> Result<Vec<String>, String> {
+    let mut paths = Vec::new();
+    collect_md_files(Path::new(&folder), &mut paths)?;
+    Ok(paths)
+}
+
+fn collect_md_files(dir: &Path, out: &mut Vec<String>) -> Result<(), String> {
+    let entries = fs::read_dir(dir).map_err(|e| e.to_string())?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            let _ = collect_md_files(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
+            out.push(path.to_string_lossy().to_string());
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]
