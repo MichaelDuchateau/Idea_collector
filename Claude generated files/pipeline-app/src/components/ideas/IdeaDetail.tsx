@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { Idea, ScoresByCriterion, ActivityLogEntry, IdeaStage, AppSettings } from '../../types';
-import { getIdea, getScoresForIdea, getActivityLog, updateIdea, moveIdeaStage } from '../../lib/db';
+import type { Idea, ScoresByCriterion, ActivityLogEntry, IdeaStage, AppSettings, ScorecardCriterion } from '../../types';
+import { getIdea, getScoresForIdea, getActivityLog, updateIdea, moveIdeaStage, getCriteria } from '../../lib/db';
 import IdeaStatusBadge from './IdeaStatusBadge';
 import IdeaEditor from './IdeaEditor';
-import { getScoreBand, SCORE_BAND_COLORS } from '../../lib/scoring';
+import ScorecardPanel from '../scoring/ScorecardPanel';
+import ScoreBreakdown from '../scoring/ScoreBreakdown';
 
 interface Props {
   ideaId:  number;
@@ -16,19 +17,22 @@ interface Props {
 const STAGES: IdeaStage[] = ['collection','screening','development','gate','build'];
 
 export default function IdeaDetail({ ideaId, onBack, onSaved, currentUser, settings }: Props) {
-  const [idea, setIdea]     = useState<Idea | null>(null);
-  const [scores, setScores] = useState<ScoresByCriterion[]>([]);
-  const [log, setLog]       = useState<ActivityLogEntry[]>([]);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving]   = useState(false);
+  const [idea, setIdea]         = useState<Idea | null>(null);
+  const [scores, setScores]     = useState<ScoresByCriterion[]>([]);
+  const [criteria, setCriteria] = useState<ScorecardCriterion[]>([]);
+  const [log, setLog]           = useState<ActivityLogEntry[]>([]);
+  const [editing, setEditing]   = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [scoreTab, setScoreTab] = useState<'score' | 'breakdown'>('breakdown');
 
   const load = async () => {
-    const [i, s, l] = await Promise.all([
+    const [i, s, l, c] = await Promise.all([
       getIdea(ideaId),
       getScoresForIdea(ideaId),
       getActivityLog(ideaId, 20),
+      getCriteria(),
     ]);
-    setIdea(i); setScores(s); setLog(l);
+    setIdea(i); setScores(s); setLog(l); setCriteria(c.filter(cr => cr.active));
   };
 
   useEffect(() => { load(); }, [ideaId]);
@@ -52,9 +56,6 @@ export default function IdeaDetail({ ideaId, onBack, onSaved, currentUser, setti
 
   if (!idea) return <div className="p-6 text-gray-400 text-sm">Loading…</div>;
 
-  const totalScore = scores.reduce((s, c) => s + c.weighted_contribution, 0);
-  const roundedScore = Math.round(totalScore * 10) / 10;
-  const band = getScoreBand(scores.some(s => s.scores.length > 0) ? roundedScore : null, settings);
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
@@ -119,34 +120,36 @@ export default function IdeaDetail({ ideaId, onBack, onSaved, currentUser, setti
         </div>
       </div>
 
-      {/* Score summary */}
-      {scores.length > 0 && (
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold text-gray-500 uppercase">Weighted Score</p>
-            {scores.some(s => s.scores.length > 0) && (
-              <span className={`text-sm font-bold px-2 py-0.5 rounded ${SCORE_BAND_COLORS[band]}`}>
-                {roundedScore}
-              </span>
-            )}
-          </div>
-          <div className="space-y-2">
-            {scores.map(sc => (
-              <div key={sc.criterion.id} className="flex items-center gap-3">
-                <span className="text-sm text-gray-700 w-44 shrink-0">{sc.criterion.name}</span>
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div
-                    className="bg-indigo-500 h-2 rounded-full transition-all"
-                    style={{ width: `${sc.average}%` }}
-                  />
-                </div>
-                <span className="text-sm text-gray-500 w-10 text-right">{sc.average.toFixed(0)}</span>
-                <span className="text-xs text-gray-400 w-10 text-right">{(sc.criterion.weight * 100).toFixed(0)}%</span>
-              </div>
-            ))}
-          </div>
+      {/* Scoring panel */}
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="flex border-b border-gray-100">
+          {(['breakdown', 'score'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setScoreTab(t)}
+              className={`px-4 py-2.5 text-sm font-medium capitalize border-b-2 transition-colors ${
+                scoreTab === t ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {t === 'score' ? 'Score this idea' : 'Score breakdown'}
+            </button>
+          ))}
         </div>
-      )}
+        <div className="p-4">
+          {scoreTab === 'breakdown' ? (
+            <ScoreBreakdown scoresByCriterion={scores} thresholds={settings} />
+          ) : (
+            <ScorecardPanel
+              ideaId={idea.id}
+              criteria={criteria}
+              existingScores={scores}
+              currentUser={currentUser}
+              thresholds={settings}
+              onScoreSaved={load}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Content */}
       <div className="bg-white rounded-lg border border-gray-200">
