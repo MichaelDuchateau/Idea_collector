@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Innovation Pipeline App — Build Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141418;
+    --surface2: #1c1c22;
+    --border: #2a2a35;
+    --text: #e8e4d8;
+    --muted: #6b6878;
+    --accent: #e8a030;
+    --accent2: #4ecdc4;
+    --accent3: #e84040;
+    --green: #52c96e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* HERO */
+  .hero {
+    border-bottom: 1px solid var(--border);
+    padding: 60px 60px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(232,160,48,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    letter-spacing: 0.03em;
+    line-height: 0.95;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-sub {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 580px;
+    font-style: italic;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+  .meta-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+  }
+
+  /* LAYOUT */
+  .content {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 200px);
+  }
+
+  /* SIDEBAR */
+  aside {
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 0 24px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    padding: 16px 24px 8px;
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: 7px 24px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .sidebar-link:hover { color: var(--text); border-left-color: var(--border); }
+  .sidebar-link.active { color: var(--accent); border-left-color: var(--accent); }
+
+  /* MAIN */
+  article {
+    padding: 48px 60px;
+    max-width: 860px;
+  }
+
+  .plan-section { margin-bottom: 64px; }
+
+  h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  h2 .num {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+
+  .section-intro {
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    margin: 28px 0 12px;
+  }
+
+  p { margin-bottom: 14px; color: #c8c4b8; }
+
+  /* RECOMMENDATION CARD */
+  .rec-card {
+    border: 1px solid var(--accent);
+    background: linear-gradient(135deg, rgba(232,160,48,0.06), rgba(232,160,48,0.02));
+    padding: 28px 32px;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .rec-card::before {
+    content: 'RECOMMENDED';
+    position: absolute;
+    top: -1px; right: 20px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    padding: 3px 10px;
+  }
+
+  .rec-card h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .rec-card p { color: var(--muted); font-size: 14px; margin-bottom: 0; }
+
+  /* TECH STACK TABLE */
+  .stack-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+
+  .stack-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stack-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: #c8c4b8;
+    vertical-align: top;
+  }
+
+  .stack-table tr:hover td { background: var(--surface); }
+
+  .stack-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .stack-table td:nth-child(2) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* DB SCHEMA */
+  .schema-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    overflow-x: auto;
+  }
+
+  .schema-block .table-name {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .schema-block .field {
+    display: flex;
+    gap: 20px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: baseline;
+  }
+
+  .schema-block .field:last-child { border-bottom: none; }
+
+  .field-name { color: var(--text); flex: 0 0 180px; }
+  .field-type { color: var(--accent2); flex: 0 0 120px; }
+  .field-note { color: var(--muted); font-size: 11px; font-style: italic; }
+
+  /* PHASES */
+  .phase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .phase-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 20px;
+  }
+
+  .phase-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .phase-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .phase-card ul {
+    padding-left: 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .phase-duration {
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: 0.1em;
+  }
+
+  /* YAML EXAMPLE */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #c8c4b8;
+  }
+
+  .code-block .kw { color: var(--accent); }
+  .code-block .str { color: var(--green); }
+  .code-block .num { color: var(--accent2); }
+  .code-block .comment { color: var(--muted); font-style: italic; }
+
+  /* FEATURE LIST */
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .feature-icon {
+    font-size: 1.3rem;
+    flex: 0 0 28px;
+    margin-top: 2px;
+  }
+
+  .feature-text h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .feature-text p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    font-style: italic;
+  }
+
+  /* DECISION TABLE */
+  .decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 20px 0;
+  }
+
+  .decision-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .decision-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: #c8c4b8;
+    vertical-align: top;
+  }
+
+  .decision-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .badge-green { background: rgba(82,201,110,0.15); color: var(--green); }
+  .badge-yellow { background: rgba(232,160,48,0.15); color: var(--accent); }
+  .badge-red { background: rgba(232,64,64,0.15); color: var(--accent3); }
+
+  .callout {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    background: rgba(232,64,64,0.05);
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .callout strong { color: var(--text); font-style: normal; }
+
+  /* SCORING DIAGRAM */
+  .scoring-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin: 20px 0;
+  }
+
+  .scoring-diagram h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .score-flow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .score-node {
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .score-node .sn-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .score-node .sn-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    color: var(--accent);
+  }
+
+  .score-arrow {
+    color: var(--border);
+    font-size: 1.2rem;
+    flex: 0 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">// Build Plan · Innovation Pipeline Application</div>
+  <h1>PIPELINE<br><span>APP PLAN</span></h1>
+  <p class="hero-sub">A detailed technical and product plan for a cross-platform desktop application managing innovation ideas, scoring, and pipeline views — for teams of 2–10.</p>
+  <div class="hero-meta">
+    <div class="meta-item"><span class="meta-label">Stack</span><span class="meta-value">Tauri + React + SQLite</span></div>
+    <div class="meta-item"><span class="meta-label">Platforms</span><span class="meta-value">macOS + Windows</span></div>
+    <div class="meta-item"><span class="meta-label">Database</span><span class="meta-value">SQLite (local)</span></div>
+    <div class="meta-item"><span class="meta-label">Phases</span><span class="meta-value">4 build phases</span></div>
+  </div>
+</div>
+
+<div class="content">
+  <aside>
+    <div class="sidebar-label">Sections</div>
+    <a class="sidebar-link active" href="#stack">01 · Tech Stack</a>
+    <a class="sidebar-link" href="#schema">02 · Database Schema</a>
+    <a class="sidebar-link" href="#markdown">03 · Markdown Import</a>
+    <a class="sidebar-link" href="#scoring">04 · Scoring Design</a>
+    <a class="sidebar-link" href="#views">05 · Core Views</a>
+    <a class="sidebar-link" href="#phases">06 · Build Phases</a>
+    <a class="sidebar-link" href="#decisions">07 · Key Decisions</a>
+    <a class="sidebar-link" href="#next">08 · Next Steps</a>
+  </aside>
+
+  <article>
+
+    <!-- 01 STACK -->
+    <div class="plan-section" id="stack">
+      <h2><span class="num">01</span>Tech Stack Recommendation</h2>
+      <p class="section-intro">Given cross-platform desktop, local SQLite, and a small team — here is the recommended stack and why.</p>
+
+      <div class="rec-card">
+        <h4>Tauri + React + TypeScript + SQLite</h4>
+        <p>Tauri gives you a native Mac and Windows app using your system's built-in WebView. React handles the UI. SQLite runs embedded — no server, no install, just a file. This stack is significantly lighter than Electron (10–20MB vs 150MB+), ships a proper native binary, and the JS/React frontend means rich UI is straightforward.</p>
+      </div>
+
+      <h3>Full Stack Breakdown</h3>
+      <table class="stack-table">
+        <thead><tr><th>Layer</th><th>Technology</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>App shell</td><td>Tauri 2.0</td><td>Rust core, native Mac/Windows binary, tiny footprint, secure IPC bridge</td></tr>
+          <tr><td>UI framework</td><td>React 18 + TypeScript</td><td>Component model ideal for pipeline views, scorecards, and charts</td></tr>
+          <tr><td>Styling</td><td>Tailwind CSS</td><td>Rapid, consistent design tokens across all views</td></tr>
+          <tr><td>Database</td><td>SQLite via tauri-plugin-sql</td><td>Single file, zero server, fast, well-understood schema</td></tr>
+          <tr><td>ORM / queries</td><td>Raw SQL + typed wrappers</td><td>Full control, easy to read schema, no magic</td></tr>
+          <tr><td>Markdown parsing</td><td>gray-matter + marked</td><td>gray-matter extracts YAML frontmatter; marked renders body</td></tr>
+          <tr><td>Charts</td><td>Recharts</td><td>React-native, composable, good funnel + bar + scatter support</td></tr>
+          <tr><td>File dialogs</td><td>Tauri dialog plugin</td><td>Native OS file picker for .md import</td></tr>
+          <tr><td>Build / package</td><td>Tauri bundler</td><td>Produces .dmg (Mac) and .msi/.exe (Windows) automatically</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Why not Electron?</strong> Electron bundles a full Chromium + Node runtime per app — typically 150–300MB. Tauri uses the OS's native WebView (WebKit on Mac, WebView2 on Windows), resulting in a 5–20MB binary. For a focused internal tool, Tauri is the better fit.
+      </div>
+    </div>
+
+    <!-- 02 SCHEMA -->
+    <div class="plan-section" id="schema">
+      <h2><span class="num">02</span>Database Schema</h2>
+      <p class="section-intro">SQLite with six core tables. Designed to be minimal, clear, and extensible.</p>
+
+      <div class="schema-block">
+        <div class="table-name">TABLE: ideas</div>
+        <div class="field"><span class="field-name">id</span><span class="field-type">INTEGER PK</span><span class="field-note">autoincrement</span></div>
+        <div class="field"><span class="field-name">title</span><span class="field-type">TEXT NOT NULL</span><span class="field-note">idea headline</span></div>
+        <div class="field"><span class="field-name">description</span><span class="field-type">TEXT</span><span class="field-note">rendered markdown body</span></div>
+        <div class="field"><span class="field-name">raw_markdown</span><span class="field-type">TEXT</span><span class="field-note">original .md source preserved</span></div>
+        <div class="field"><span class="field-name">status</span><span class="field-type">TEXT</span><span class="field-note">draft | active | parked | killed | launched</span></div>
+        <div class="field"><span class="field-name">stage</span><span class="field-type">TEXT</span><span class="field-note">collection | screening | development | gate | build</span></div>
+        <div class="field"><span class="field-name">category</span><span class="field-type">TEXT</span><span class="field-note">from YAML frontmatter</span></div>
+        <div class="field"><span class="field-name">owner</span><span class="field-type">TEXT</span><span class="field-note">from YAML frontmatter</span></div>
+        <div class="field"><span class="field-name">horizon</span><span class="field-type">TEXT</span><span class="field-note">H1 | H2 | H3 (McKinsey model)</span></div>
+        <div class="field"><span class="field-name">source_file</span><span class="field-type">TEXT</span><span class="field-note">original filename on import</span></div>
+        <div class="field"><span class="field-name">created_at</span><span class="field-type">DATETIME</span><span class="field-note">auto</span></div>
+        <div class="field"><span class="field-name">updated_at</span><span class="field-type">DATETIME</span><span class="field-note">auto</span></div>
+      </div>
+
+      <div class="schema-block">
+        <div class="table-name">TABLE: scorecard_criteria</div>
+        <div class="field"><span class="field-name">id</span><span class="field-type">INTEGER PK</span><span class="field-note"></span></div>
+        <div class="field"><span class="field-name">name</span><span class="field-type">TEXT NOT NULL</span><span class="field-note">e.g. "Strategic Fit"</span></div>
+        <div class="field"><span class="field-name">description</span><span class="field-type">TEXT</span><span class="field-note">guidance for scorers</span></div>
+        <div class="field"><span class="field-name">weight</span><span class="field-type">REAL NOT NULL</span><span class="field-note">0.0–1.0, all weights sum to 1.0</span></div>
+        <div class="field"><span class="field-name">sort_order</span><span class="field-type">INTEGER</span><span class="field-note">display order</span></div>
+        <div class="field"><span class="field-name">active</span><span class="field-type">BOOLEAN</span><span class="field-note">soft disable without deleting</span></div>
+      </div>
+
+      <div class="schema-block">
+        <div class="table-name">TABLE: scores</div>
+        <div class="field"><span class="field-name">id</span><span class="field-type">INTEGER PK</span><span class="field-note"></span></div>
+        <div class="field"><span class="field-name">idea_id</span><span class="field-type">INTEGER FK</span><span class="field-note">→ ideas.id</span></div>
+        <div class="field"><span class="field-name">criterion_id</span><span class="field-type">INTEGER FK</span><span class="field-note">→ scorecard_criteria.id</span></div>
+        <div class="field"><span class="field-name">value</span><span class="field-type">REAL</span><span class="field-note">0–100 raw score</span></div>
+        <div class="field"><span class="field-name">notes</span><span class="field-type">TEXT</span><span class="field-note">scorer rationale / comments</span></div>
+        <div class="field"><span class="field-name">scored_by</span><span class="field-type">TEXT</span><span class="field-note">user name (no auth needed for local)</span></div>
+        <div class="field"><span class="field-name">scored_at</span><span class="field-type">DATETIME</span><span class="field-note">auto</span></div>
+      </div>
+
+      <div class="schema-block">
+        <div class="table-name">TABLE: tags &amp; idea_tags</div>
+        <div class="field"><span class="field-name">tags.id, tags.name</span><span class="field-type">TEXT</span><span class="field-note">free-form tag vocabulary</span></div>
+        <div class="field"><span class="field-name">idea_tags.idea_id</span><span class="field-type">INTEGER FK</span><span class="field-note">many-to-many join</span></div>
+        <div class="field"><span class="field-name">idea_tags.tag_id</span><span class="field-type">INTEGER FK</span><span class="field-note">many-to-many join</span></div>
+      </div>
+
+      <div class="schema-block">
+        <div class="table-name">TABLE: activity_log</div>
+        <div class="field"><span class="field-name">id</span><span class="field-type">INTEGER PK</span><span class="field-note"></span></div>
+        <div class="field"><span class="field-name">idea_id</span><span class="field-type">INTEGER FK</span><span class="field-note">nullable (some events are global)</span></div>
+        <div class="field"><span class="field-name">event_type</span><span class="field-type">TEXT</span><span class="field-note">imported | scored | stage_changed | killed | etc.</span></div>
+        <div class="field"><span class="field-name">detail</span><span class="field-type">TEXT JSON</span><span class="field-note">serialized event payload</span></div>
+        <div class="field"><span class="field-name">actor</span><span class="field-type">TEXT</span><span class="field-note">who did it</span></div>
+        <div class="field"><span class="field-name">created_at</span><span class="field-type">DATETIME</span><span class="field-note">auto</span></div>
+      </div>
+
+      <p>The <strong>computed weighted score</strong> for any idea is a SQL view, not stored — it recalculates live from <code>scores × criteria.weight</code>. This means changing criterion weights instantly re-ranks all ideas without a migration.</p>
+    </div>
+
+    <!-- 03 MARKDOWN -->
+    <div class="plan-section" id="markdown">
+      <h2><span class="num">03</span>Markdown Import & YAML Frontmatter</h2>
+      <p class="section-intro">Ideas can be authored externally in any markdown editor and imported via a file picker or folder watch. YAML frontmatter maps to database columns.</p>
+
+      <h3>Expected .md File Format</h3>
+      <div class="code-block">
+<span class="comment">--- (YAML frontmatter block) ---</span>
+<span class="kw">title:</span> <span class="str">"AI-Powered Customer Support Bot"</span>
+<span class="kw">category:</span> <span class="str">"Digital / AI"</span>
+<span class="kw">owner:</span> <span class="str">"Sarah Chen"</span>
+<span class="kw">stage:</span> <span class="str">"screening"</span>
+<span class="kw">status:</span> <span class="str">"active"</span>
+<span class="kw">horizon:</span> <span class="str">"H1"</span>
+<span class="kw">tags:</span> <span class="str">["automation", "customer-experience", "AI"]</span>
+<span class="kw">created:</span> <span class="num">2026-03-15</span>
+<span class="comment">--- (end frontmatter) ---</span>
+
+<span class="comment"># Body: plain markdown rendered in the idea detail view</span>
+
+## Problem
+Customers wait 4+ hours for support responses during peak periods...
+
+## Proposed Solution
+Deploy an LLM-powered first-response bot trained on our knowledge base...
+
+## Open Questions
+- What's the escalation path for complex issues?
+- How do we handle sentiment detection?
+      </div>
+
+      <h3>Import Logic</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">📂</div>
+          <div class="feature-text">
+            <h4>Single file or batch folder import</h4>
+            <p>User opens native file dialog — selects one .md or a whole folder. All valid files are queued for import with a preview/confirm step.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-text">
+            <h4>gray-matter parses frontmatter</h4>
+            <p>YAML block is extracted and mapped to schema columns. Unknown fields are stored in a <code>meta JSON</code> column — nothing is dropped.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔁</div>
+          <div class="feature-text">
+            <h4>Duplicate detection by title + source_file</h4>
+            <p>Re-importing the same file offers Update / Skip / Create New — so you can keep markdown as the source of truth and re-sync.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🗂️</div>
+          <div class="feature-text">
+            <h4>Raw markdown preserved</h4>
+            <p>The original .md text is stored in <code>raw_markdown</code> so ideas can be exported back to .md at any time without data loss.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 SCORING -->
+    <div class="plan-section" id="scoring">
+      <h2><span class="num">04</span>Scoring Design</h2>
+      <p class="section-intro">One shared scorecard template, configurable criteria and weights. Scores are per-criterion and the weighted total is computed dynamically.</p>
+
+      <h3>How the Score Calculates</h3>
+      <div class="scoring-diagram">
+        <h4>Weighted Score Computation</h4>
+        <div class="score-flow">
+          <div class="score-node"><div class="sn-label">Raw Score</div><div class="sn-val">0–100</div></div>
+          <div class="score-arrow">×</div>
+          <div class="score-node"><div class="sn-label">Weight</div><div class="sn-val">0.0–1.0</div></div>
+          <div class="score-arrow">Σ per criterion</div>
+          <div class="score-node"><div class="sn-label">Weighted Total</div><div class="sn-val">0–100</div></div>
+          <div class="score-arrow">→</div>
+          <div class="score-node"><div class="sn-label">Gate Decision</div><div class="sn-val">▲ ■ ✕</div></div>
+        </div>
+      </div>
+
+      <h3>Scorecard Features</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">⚙️</div>
+          <div class="feature-text">
+            <h4>Admin: Configure Criteria & Weights</h4>
+            <p>Any team member can open Settings → Scorecard and add, rename, reorder, or reweight criteria. Weights auto-normalize to 100%. Changes take effect immediately across all ideas.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎚️</div>
+          <div class="feature-text">
+            <h4>Per-Criterion Scoring with Notes</h4>
+            <p>Each criterion gets a 0–100 slider plus an optional rationale text field. Notes are stored per-score so the reasoning is auditable.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <div class="feature-text">
+            <h4>Live Ranking on Pipeline View</h4>
+            <p>All ideas in the same stage are ranked by weighted score. The rank updates instantly as scores are entered or weights change.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🚦</div>
+          <div class="feature-text">
+            <h4>Threshold Bands (configurable)</h4>
+            <p>Set score thresholds: e.g. ≥75 = Advance (green), 50–74 = Develop Further (amber), &lt;50 = Park/Kill (red). Shown as colour bands in all list and pipeline views.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📋</div>
+          <div class="feature-text">
+            <h4>Unscored vs Scored State</h4>
+            <p>Ideas without scores are clearly marked "Not Yet Scored". The pipeline view can filter to show only scored or only unscored ideas to manage review workload.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Default Criteria (Configurable)</h3>
+      <table class="stack-table">
+        <thead><tr><th>Criterion</th><th>Default Weight</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Strategic Fit</td><td>30%</td><td>Alignment with org strategy and direction</td></tr>
+          <tr><td>Market Attractiveness</td><td>25%</td><td>Size, growth, competitive landscape</td></tr>
+          <tr><td>Technical Feasibility</td><td>20%</td><td>Can we build this with current capabilities?</td></tr>
+          <tr><td>Financial Potential</td><td>15%</td><td>Revenue, cost savings, or ROI outlook</td></tr>
+          <tr><td>Resource Requirements</td><td>10%</td><td>Effort, cost, time — lower = better</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 05 VIEWS -->
+    <div class="plan-section" id="views">
+      <h2><span class="num">05</span>Core Application Views</h2>
+      <p class="section-intro">Five main screens. Each maps to a key workflow in the innovation pipeline.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">🗃️</div>
+          <div class="feature-text">
+            <h4>Ideas List / Table View</h4>
+            <p>All ideas in a sortable, filterable table. Columns: Title, Stage, Status, Score, Owner, Horizon, Updated. Quick-filter by stage, status, category, score band. Click to open detail.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔭</div>
+          <div class="feature-text">
+            <h4>Pipeline / Funnel Board</h4>
+            <p>Kanban-style columns for each pipeline stage. Ideas appear as cards showing title, score badge, and horizon. Drag-and-drop to move ideas between stages (logs to activity_log). Filter by score band.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📄</div>
+          <div class="feature-text">
+            <h4>Idea Detail View</h4>
+            <p>Full idea page: rendered markdown body, metadata panel (stage, owner, tags), scoring panel (all criteria with sliders + notes), activity log, and status controls.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📈</div>
+          <div class="feature-text">
+            <h4>Reports & Charts Dashboard</h4>
+            <p>Funnel chart (idea counts by stage), score distribution histogram, horizon breakdown (H1/H2/H3 pie), top-10 ranked ideas, and category breakdown. All live from the SQLite database.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚙️</div>
+          <div class="feature-text">
+            <h4>Settings</h4>
+            <p>Scorecard criteria editor (add/edit/reorder/reweight), score threshold configuration, user name setup, database backup/restore, and help section (your existing explorer content).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 PHASES -->
+    <div class="plan-section" id="phases">
+      <h2><span class="num">06</span>Build Phases</h2>
+      <p class="section-intro">Four phases from scaffold to polished app. Each phase ships something usable.</p>
+
+      <div class="phase-grid">
+        <div class="phase-card">
+          <div class="phase-num">01</div>
+          <div class="phase-name">Foundation</div>
+          <ul>
+            <li>Tauri + React project scaffold</li>
+            <li>SQLite schema &amp; migrations</li>
+            <li>Ideas list view (CRUD)</li>
+            <li>Markdown import (single file)</li>
+            <li>YAML frontmatter parsing</li>
+          </ul>
+          <div class="phase-duration">▸ Outcome: importable idea database</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-num">02</div>
+          <div class="phase-name">Scoring</div>
+          <ul>
+            <li>Scorecard criteria settings</li>
+            <li>Per-idea scoring UI</li>
+            <li>Weighted score computation</li>
+            <li>Score threshold bands</li>
+            <li>Ranked list view</li>
+          </ul>
+          <div class="phase-duration">▸ Outcome: ideas can be scored &amp; ranked</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-num">03</div>
+          <div class="phase-name">Pipeline Views</div>
+          <ul>
+            <li>Kanban funnel board</li>
+            <li>Drag-and-drop stage moves</li>
+            <li>Activity log</li>
+            <li>Idea detail view (full)</li>
+            <li>Batch markdown import</li>
+          </ul>
+          <div class="phase-duration">▸ Outcome: full pipeline management</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-num">04</div>
+          <div class="phase-name">Reports + Polish</div>
+          <ul>
+            <li>Charts dashboard (Recharts)</li>
+            <li>Help section (your explorer)</li>
+            <li>DB backup/restore</li>
+            <li>Mac .dmg + Windows .msi build</li>
+            <li>Onboarding flow</li>
+          </ul>
+          <div class="phase-duration">▸ Outcome: shippable desktop app</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 DECISIONS -->
+    <div class="plan-section" id="decisions">
+      <h2><span class="num">07</span>Key Open Decisions</h2>
+      <p class="section-intro">A few design choices to confirm before building begins. These affect the schema and UI significantly.</p>
+
+      <table class="decision-table">
+        <thead><tr><th>Decision</th><th>Options</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Multi-user scoring</td>
+            <td>Single scorer per idea vs. multiple scorers averaged</td>
+            <td><span class="badge badge-yellow">Confirm</span> — Schema supports multi-scorer; UI can show average or individual scores. Start with single scorer, add averaging later.</td>
+          </tr>
+          <tr>
+            <td>Score history</td>
+            <td>Overwrite scores vs. keep full score history per idea</td>
+            <td><span class="badge badge-green">Keep history</span> — Current schema stores every score entry with timestamp. Trend over time is valuable.</td>
+          </tr>
+          <tr>
+            <td>Gate approval</td>
+            <td>Score threshold auto-advances ideas vs. manual stage moves only</td>
+            <td><span class="badge badge-green">Manual</span> — Stage moves should always be intentional human decisions. Score is a recommendation, not automation.</td>
+          </tr>
+          <tr>
+            <td>Markdown authoring</td>
+            <td>In-app markdown editor vs. import-only</td>
+            <td><span class="badge badge-yellow">Confirm</span> — Import-only is simpler. An in-app editor (e.g. CodeMirror) adds scope but keeps workflow inside the app.</td>
+          </tr>
+          <tr>
+            <td>Export format</td>
+            <td>CSV, PDF report, Excel, back to .md</td>
+            <td><span class="badge badge-green">Start with CSV + .md</span> — CSV for data, .md for round-trip fidelity. PDF/Excel in Phase 4+.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 08 NEXT STEPS -->
+    <div class="plan-section" id="next">
+      <h2><span class="num">08</span>Next Steps</h2>
+      <p class="section-intro">How to proceed from here — in order.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">✅</div>
+          <div class="feature-text">
+            <h4>1. Confirm the open decisions above</h4>
+            <p>Especially: in-app editor vs. import-only, and multi-scorer vs. single scorer. These shape the schema and UI from the start.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🏗️</div>
+          <div class="feature-text">
+            <h4>2. Scaffold the Tauri + React project</h4>
+            <p>We can do this together right here — generate the project structure, package.json, Tauri config, and initial SQLite schema with migrations.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📐</div>
+          <div class="feature-text">
+            <h4>3. Design the UI in an artifact first</h4>
+            <p>Before writing app code, build the key screens as interactive HTML prototypes — Ideas List, Scoring Panel, Pipeline Board — to confirm the UX.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🚀</div>
+          <div class="feature-text">
+            <h4>4. Build Phase 1 (Foundation)</h4>
+            <p>Tauri scaffold → SQLite migrations → Ideas CRUD → Markdown import. First working build you can open on Mac and Windows.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:32px;">
+        <strong>Where to start right now:</strong> Say the word and we can immediately generate the Tauri project scaffold, the full SQL migration file, or the UI prototypes for any of the five core screens — whichever is most useful to you first.
+      </div>
+    </div>
+
+  </article>
+</div>
+
+<script>
+  // Sidebar active link tracking
+  const links = document.querySelectorAll('.sidebar-link');
+  const sections = document.querySelectorAll('.plan-section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const id = entry.target.id;
+        const link = document.querySelector(`.sidebar-link[href="#${id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

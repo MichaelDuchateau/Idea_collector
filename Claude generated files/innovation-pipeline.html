@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Innovation Pipeline Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f5f0e8;
+    --warm: #e8dcc8;
+    --accent: #c84b2f;
+    --accent2: #2a6049;
+    --accent3: #d4a017;
+    --muted: #7a7060;
+    --border: #ccc4b0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 24px 40px 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .logo-block h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-block h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .logo-block p {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--warm);
+  }
+
+  /* NAV */
+  nav {
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 14px 20px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { color: var(--ink); }
+  .nav-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* MAIN */
+  main { padding: 40px; max-width: 1100px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ---- FUNNEL SECTION ---- */
+  .funnel-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 48px;
+    align-items: start;
+  }
+
+  .funnel-intro h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .funnel-intro p {
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .stat-box {
+    flex: 1;
+    border: 1px solid var(--border);
+    padding: 16px;
+    background: var(--warm);
+  }
+
+  .stat-box .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem;
+    color: var(--accent);
+  }
+
+  .stat-box .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* FUNNEL VISUAL */
+  .funnel-visual {
+    position: relative;
+  }
+
+  .funnel-stage {
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 6px;
+    position: relative;
+  }
+
+  .funnel-stage:hover .stage-bar { filter: brightness(0.92); }
+  .funnel-stage.selected .stage-bar { outline: 3px solid var(--accent); }
+
+  .stage-bar {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 2px;
+  }
+
+  .stage-name {
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .stage-count {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    opacity: 0.85;
+  }
+
+  .stage-detail {
+    display: none;
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 16px 20px;
+    background: white;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .stage-detail.open { display: block; }
+
+  .stage-detail h4 {
+    color: var(--ink);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    margin-top: 12px;
+  }
+
+  .stage-detail h4:first-child { margin-top: 0; }
+
+  .stage-detail ul {
+    padding-left: 16px;
+  }
+
+  .stage-detail ul li { margin-bottom: 4px; }
+
+  /* ---- SCORING SECTION ---- */
+  .scoring-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .method-card {
+    border: 1px solid var(--border);
+    background: var(--warm);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .method-card:hover { background: white; box-shadow: 4px 4px 0 var(--border); }
+  .method-card.active-card {
+    background: white;
+    border-color: var(--accent2);
+    box-shadow: 4px 4px 0 var(--accent2);
+  }
+
+  .method-card .m-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent2);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .method-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+
+  .method-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .method-detail {
+    border: 1px solid var(--border);
+    background: white;
+    padding: 28px;
+    display: none;
+  }
+
+  .method-detail.open { display: block; }
+
+  .method-detail h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+  }
+
+  .method-detail .sub {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .criterion {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .criterion-name {
+    flex: 0 0 180px;
+    font-size: 12px;
+    color: var(--ink);
+  }
+
+  .criterion-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: var(--warm);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .criterion-bar {
+    height: 100%;
+    background: var(--accent2);
+    transition: width 0.6s ease;
+  }
+
+  .criterion-weight {
+    flex: 0 0 40px;
+    text-align: right;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .pros-cons h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pros h4 { color: var(--accent2); }
+  .cons h4 { color: var(--accent); }
+
+  .pros-cons ul {
+    padding-left: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ---- COLLECTION SECTION ---- */
+  .collection-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .coll-card {
+    border: 1px solid var(--border);
+    padding: 20px;
+    background: var(--warm);
+  }
+
+  .coll-card .icon {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .coll-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .coll-card p {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .coll-card .examples {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent2);
+  }
+
+  /* ---- SIMULATOR SECTION ---- */
+  .simulator-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 32px;
+  }
+
+  .idea-pool h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .idea-item {
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--warm);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .idea-item:hover { background: white; }
+  .idea-item.selected-idea { background: white; border-color: var(--accent); }
+
+  .idea-name { font-size: 12px; font-weight: 500; }
+  .idea-category {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .idea-score-preview {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--accent2);
+  }
+
+  .score-panel h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .score-slider-group {
+    margin-bottom: 16px;
+  }
+
+  .score-slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .score-slider-group label span {
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--accent2);
+    height: 4px;
+  }
+
+  .total-score-display {
+    margin-top: 24px;
+    padding: 20px;
+    background: var(--ink);
+    color: var(--paper);
+    text-align: center;
+  }
+
+  .total-score-display .big-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: var(--accent3);
+  }
+
+  .total-score-display .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.6;
+    margin-top: 6px;
+  }
+
+  .verdict {
+    margin-top: 12px;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- FRAMEWORK SECTION ---- */
+  .framework-timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .framework-timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -32px;
+    top: 10px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  .timeline-item h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+  }
+
+  .timeline-item .phase-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .timeline-item p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  .timeline-item .tools {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .tool-pill {
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--warm);
+  }
+
+  /* section headers */
+  .section-header {
+    margin-bottom: 32px;
+  }
+
+  .section-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .section-header p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 680px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  .note-box {
+    border-left: 3px solid var(--accent3);
+    padding: 14px 18px;
+    background: #fdf8ec;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <h1>Innovation <em>Pipeline</em> Explorer</h1>
+    <p>Idea Collection · Scoring · Selection · Development</p>
+  </div>
+  <div class="header-tags">
+    <span class="tag">Stage-Gate</span>
+    <span class="tag">Idea Funnels</span>
+    <span class="tag">Portfolio Mgmt</span>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showSection('funnel')">The Funnel</button>
+  <button class="nav-btn" onclick="showSection('collection')">Idea Collection</button>
+  <button class="nav-btn" onclick="showSection('scoring')">Scoring Methods</button>
+  <button class="nav-btn" onclick="showSection('simulator')">Score Simulator</button>
+  <button class="nav-btn" onclick="showSection('frameworks')">Frameworks</button>
+</nav>
+
+<main>
+
+  <!-- FUNNEL SECTION -->
+  <div class="section active" id="s-funnel">
+    <div class="funnel-intro">
+      <div>
+        <h2>The Idea Funnel — How Pipelines Work</h2>
+        <p>Innovation pipelines convert a broad pool of raw ideas into a small set of developed initiatives. Ideas are progressively filtered through structured gates, with fewer ideas advancing at each stage.</p>
+        <p>Click any stage below to explore what happens, who's involved, and what tools are commonly used.</p>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="num">3,000</div>
+            <div class="label">Raw ideas needed</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">125</div>
+            <div class="label">Small projects</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">1</div>
+            <div class="label">Successful launch</div>
+          </div>
+        </div>
+        <div class="note-box" style="margin-top:20px;">
+          <strong>Stevens & Burley (1997)</strong> famously showed it takes roughly 3,000 raw ideas to produce one successful commercial product. The ratio varies by industry, but the principle holds: pipelines must be wide at the top.
+        </div>
+      </div>
+      <div class="funnel-visual">
+        <div id="funnel-stages"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLLECTION SECTION -->
+  <div class="section" id="s-collection">
+    <div class="section-header">
+      <h2>Idea Collection Methods</h2>
+      <p>The first stage of any innovation pipeline is generating and capturing ideas. Organizations use a range of structured and unstructured approaches to fill the top of the funnel.</p>
+    </div>
+    <div class="collection-methods" id="coll-methods"></div>
+    <hr class="divider">
+    <div class="note-box">
+      <strong>Best practice:</strong> Don't filter during collection. The goal at this stage is quantity over quality. Premature filtering causes survivorship bias and kills unconventional ideas before they can be explored.
+    </div>
+  </div>
+
+  <!-- SCORING SECTION -->
+  <div class="section" id="s-scoring">
+    <div class="section-header">
+      <h2>Scoring & Selection Methods</h2>
+      <p>Once ideas are collected, organizations need systematic ways to evaluate and prioritize them. Click a method to explore its criteria, weights, and tradeoffs.</p>
+    </div>
+    <div class="scoring-grid" id="scoring-grid"></div>
+    <div class="method-detail" id="method-detail"></div>
+  </div>
+
+  <!-- SIMULATOR SECTION -->
+  <div class="section" id="s-simulator">
+    <div class="section-header">
+      <h2>Idea Scoring Simulator</h2>
+      <p>Select an idea from the pool and score it using a weighted scorecard. See how different weight distributions change which ideas advance.</p>
+    </div>
+    <div class="simulator-wrap">
+      <div class="idea-pool">
+        <h3>Idea Pool</h3>
+        <div id="idea-list"></div>
+      </div>
+      <div class="score-panel">
+        <h3>Weighted Scorecard</h3>
+        <div id="sliders"></div>
+        <div class="total-score-display">
+          <div class="big-score" id="total-score">—</div>
+          <div class="label">Weighted Score / 100</div>
+          <div class="verdict" id="verdict">Select an idea to score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAMEWORKS SECTION -->
+  <div class="section" id="s-frameworks">
+    <div class="section-header">
+      <h2>Common Innovation Frameworks</h2>
+      <p>Different organizations adopt different structured approaches. Here are the most widely-used frameworks for managing innovation pipelines end-to-end.</p>
+    </div>
+    <div class="framework-timeline" id="frameworks-list"></div>
+  </div>
+
+</main>
+
+<script>
+// ======================== DATA ========================
+
+const funnelStages = [
+  {
+    name: "Idea Generation",
+    count: "∞",
+    color: "#c84b2f22",
+    border: "#c84b2f",
+    width: "100%",
+    desc: "Cast the net as wide as possible. All sources are valid — employees, customers, competitors, academic research, trend scanning.",
+    activities: ["Hackathons & ideathons", "Employee idea portals", "Customer co-creation workshops", "Technology scouting", "Competitive intelligence"],
+    tools: ["IdeaScale", "Brightidea", "HYPE Innovation", "Spigit", "Sticky notes + workshops"]
+  },
+  {
+    name: "Idea Capture & Triage",
+    count: "~500",
+    color: "#d4a01722",
+    border: "#d4a017",
+    width: "85%",
+    desc: "Ideas are logged in a central repository, deduplicated, and quickly assessed for basic viability. Low-effort gut-check by a small team.",
+    activities: ["Centralized idea database", "Deduplication & clustering", "Basic feasibility triage", "Assign idea owners", "Tag by category/theme"],
+    tools: ["Notion", "Airtable", "Confluence", "Dedicated innovation platforms"]
+  },
+  {
+    name: "Concept Screening",
+    count: "~125",
+    color: "#2a604922",
+    border: "#2a6049",
+    width: "65%",
+    desc: "Apply quick scoring criteria to filter for strategic fit, novelty, and rough feasibility. Usually a lightweight scorecard review by a cross-functional team.",
+    activities: ["Strategic fit assessment", "Quick scoring (3–5 criteria)", "Cross-functional review", "Kill / park / proceed decision"],
+    tools: ["Weighted scorecards", "BCG/Ansoff matrices", "Voting tools", "Pugh matrix"]
+  },
+  {
+    name: "Concept Development",
+    count: "~30",
+    color: "#5a3e9022",
+    border: "#5a3e90",
+    width: "45%",
+    desc: "Surviving ideas are fleshed out into business cases. Customer validation, prototyping, and market sizing happens here.",
+    activities: ["Customer discovery interviews", "Market sizing (TAM/SAM/SOM)", "Prototyping & mockups", "Financial modeling (rough)", "Risk identification"],
+    tools: ["Design sprints", "Customer interviews", "Figma / paper prototypes", "Business model canvas"]
+  },
+  {
+    name: "Business Case & Gate",
+    count: "~8",
+    color: "#c84b2f44",
+    border: "#c84b2f",
+    width: "30%",
+    desc: "A formal investment gate. A senior review board evaluates full business cases with financial projections, resource needs, and strategic rationale.",
+    activities: ["Full business case presentation", "Financial modeling (NPV, IRR, payback)", "Resource requirements", "Risk/benefit analysis", "Go / No-go decision"],
+    tools: ["Stage-Gate® process", "Investment committee review", "IRR/NPV models"]
+  },
+  {
+    name: "Development & Launch",
+    count: "~3",
+    color: "#0f0e0c11",
+    border: "#0f0e0c",
+    width: "18%",
+    desc: "Funded projects are developed, piloted, and launched. Continuous monitoring against KPIs. Portfolio management across all active projects.",
+    activities: ["Project execution", "Agile development sprints", "Market piloting", "KPI tracking", "Portfolio review cadence"],
+    tools: ["Agile / Scrum", "OKRs", "Innovation accounting", "Portfolio dashboards"]
+  }
+];
+
+const collectionMethods = [
+  { icon: "💡", name: "Internal Idea Portals", desc: "Always-on digital platforms where employees submit ideas anytime. Often includes voting, comments, and campaign-based challenges.", examples: "Brightidea, IdeaScale, Sideways 6" },
+  { icon: "⚡", name: "Hackathons & Sprints", desc: "Time-boxed events (24–72h) where cross-functional teams compete to develop concepts. High energy, produces tangible prototypes.", examples: "Internal, partner, or open hackathons" },
+  { icon: "🗣️", name: "Customer Co-Creation", desc: "Structured workshops or online communities where customers actively contribute ideas and validate concepts with real users.", examples: "LEGO Ideas, MyStarbucksIdea" },
+  { icon: "🔭", name: "Technology & Trend Scouting", desc: "Systematic monitoring of patent filings, academic research, startup ecosystems, and emerging tech to spot opportunities.", examples: "Gartner, CB Insights, patent databases" },
+  { icon: "🤝", name: "Open Innovation", desc: "Partnering with external organizations, universities, startups, or the public to source ideas beyond organizational boundaries.", examples: "P&G Connect+Develop, challenges.gov" },
+  { icon: "📊", name: "Voice of Customer (VoC)", desc: "Systematic collection of customer feedback, pain points, and unmet needs through surveys, interviews, and NPS analysis to derive innovation opportunities.", examples: "Jobs-to-be-Done, ethnographic research" }
+];
+
+const scoringMethods = [
+  {
+    id: "scorecard",
+    tag: "Most Common",
+    name: "Weighted Scorecard",
+    short: "Multi-criteria scoring with assigned weights for strategic alignment.",
+    criteria: [
+      { name: "Strategic Fit", weight: 30 },
+      { name: "Market Attractiveness", weight: 25 },
+      { name: "Technical Feasibility", weight: 20 },
+      { name: "Financial Potential", weight: 15 },
+      { name: "Resource Requirements", weight: 10 },
+    ],
+    pros: ["Transparent & auditable", "Customizable weights", "Enables comparison", "Stakeholder buy-in"],
+    cons: ["Can be gamed", "Weights are subjective", "May penalize radical ideas", "Time-intensive"]
+  },
+  {
+    id: "portfolio",
+    tag: "Strategic",
+    name: "Portfolio Mapping",
+    short: "Plot ideas on a 2×2 matrix (risk vs. reward, effort vs. impact) to balance the portfolio.",
+    criteria: [
+      { name: "Strategic Value", weight: 40 },
+      { name: "Probability of Success", weight: 30 },
+      { name: "Resource Requirements", weight: 20 },
+      { name: "Time to Market", weight: 10 },
+    ],
+    pros: ["Visual & intuitive", "Balances portfolio", "Good for senior review", "Shows tradeoffs"],
+    cons: ["Oversimplifies", "Hard to place ideas objectively", "Ignores dependencies", "Two dimensions often too few"]
+  },
+  {
+    id: "stage-gate",
+    tag: "Structured",
+    name: "Stage-Gate® Gates",
+    short: "Formal go/kill/hold/recycle decisions at predefined gates using must-meet and should-meet criteria.",
+    criteria: [
+      { name: "Must-Meet Criteria", weight: 50 },
+      { name: "Should-Meet Criteria", weight: 30 },
+      { name: "Gatekeepers' Judgment", weight: 20 },
+    ],
+    pros: ["Rigorous process", "Clear decision points", "Reduces risk", "Well-established"],
+    cons: ["Bureaucratic", "Slow for fast markets", "Can kill disruptive ideas", "Requires strong governance"]
+  },
+  {
+    id: "lean",
+    tag: "Agile",
+    name: "Lean Startup / Experiment-Based",
+    short: "Score ideas by validated learnings from rapid experiments and MVPs rather than upfront analysis.",
+    criteria: [
+      { name: "Desirability (validated)", weight: 35 },
+      { name: "Feasibility (tested)", weight: 30 },
+      { name: "Viability (evidence)", weight: 25 },
+      { name: "Pivot Potential", weight: 10 },
+    ],
+    pros: ["Evidence-based", "Reduces assumption risk", "Fast iteration", "Customer-centric"],
+    cons: ["Can lose long-horizon bets", "Requires experimentation culture", "Harder to govern", "Not all ideas can be prototyped cheaply"]
+  }
+];
+
+const ideas = [
+  { name: "AI-Powered Customer Support Bot", cat: "Digital / AI", scores: { fit: 80, market: 75, feasibility: 85, financial: 70, resources: 60 } },
+  { name: "Biodegradable Packaging Line", cat: "Sustainability", scores: { fit: 90, market: 65, feasibility: 60, financial: 55, resources: 45 } },
+  { name: "B2B Subscription Analytics Dashboard", cat: "SaaS / Data", scores: { fit: 70, market: 80, feasibility: 75, financial: 85, resources: 70 } },
+  { name: "Employee Wellness Mobile App", cat: "Internal", scores: { fit: 60, market: 50, feasibility: 80, financial: 40, resources: 65 } },
+  { name: "AR Product Visualization Tool", cat: "Digital / XR", scores: { fit: 75, market: 70, feasibility: 55, financial: 65, resources: 50 } },
+];
+
+const criteria = [
+  { key: "fit", label: "Strategic Fit", weight: 30 },
+  { key: "market", label: "Market Attractiveness", weight: 25 },
+  { key: "feasibility", label: "Technical Feasibility", weight: 20 },
+  { key: "financial", label: "Financial Potential", weight: 15 },
+  { key: "resources", label: "Resource Requirements", weight: 10 },
+];
+
+const frameworks = [
+  {
+    name: "Stage-Gate®",
+    phase: "Cooper, 1986 · Most widely adopted",
+    desc: "A structured, stage-based process where ideas pass through defined stages (Scoping → Business Case → Development → Testing → Launch) with formal 'gates' at each transition where a cross-functional review board makes go/kill decisions.",
+    tools: ["Gate review committees", "Business cases", "Project scorecards", "Portfolio dashboards"]
+  },
+  {
+    name: "Lean Startup",
+    phase: "Ries, 2011 · Startup-inspired",
+    desc: "Build-Measure-Learn cycles. Ideas are quickly turned into Minimum Viable Products (MVPs) to test key assumptions. Decisions are based on validated data, not projections. Favors speed and learning over planning.",
+    tools: ["MVPs", "A/B testing", "Pivot/persevere decisions", "Innovation accounting"]
+  },
+  {
+    name: "Design Thinking",
+    phase: "IDEO / Stanford d.school · Human-centered",
+    desc: "A five-stage process (Empathize → Define → Ideate → Prototype → Test) that keeps user needs at the center of idea generation and refinement. Often used as an upstream ideation methodology before formal pipeline scoring.",
+    tools: ["Empathy mapping", "HMW questions", "Brainstorming", "Prototyping", "User testing"]
+  },
+  {
+    name: "Horizon Framework (McKinsey)",
+    phase: "McKinsey · Portfolio balancing",
+    desc: "Classifies innovation into three time horizons: H1 (core business improvements, 0–2 years), H2 (emerging opportunities, 2–5 years), H3 (transformational bets, 5+ years). Helps balance short-term returns against long-term growth.",
+    tools: ["Portfolio reviews", "Resource allocation models", "Strategic roadmapping"]
+  },
+  {
+    name: "Open Innovation (Chesbrough)",
+    phase: "Chesbrough, 2003 · Ecosystem-based",
+    desc: "Deliberately includes external ideas, technologies, and partners alongside internal R&D. Combines inbound open innovation (absorbing external ideas) and outbound (licensing internal IP). Requires dedicated scouting and partnership functions.",
+    tools: ["Technology scouting", "Partnership frameworks", "IP licensing", "Startup collaboration programs"]
+  },
+  {
+    name: "Jobs-to-Be-Done (JTBD)",
+    phase: "Christensen / Ulwick · Demand-driven",
+    desc: "Ideas are anchored to specific 'jobs' that customers are trying to accomplish. The scoring and selection filters for ideas that address underserved jobs — prioritizing real demand signals over internal assumptions about product features.",
+    tools: ["Customer interviews", "Opportunity scoring", "Outcome-driven innovation"]
+  }
+];
+
+// ======================== RENDER ========================
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// --- FUNNEL ---
+function renderFunnel() {
+  const container = document.getElementById('funnel-stages');
+  funnelStages.forEach((stage, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'funnel-stage';
+    wrap.innerHTML = `
+      <div class="stage-bar" style="background:${stage.color}; border:1px solid ${stage.border}; width:${stage.width}; margin:0 auto;">
+        <div>
+          <div class="stage-name">${stage.name}</div>
+        </div>
+        <div class="stage-count">${stage.count}</div>
+      </div>
+      <div class="stage-detail" id="stage-${i}">
+        <h4>What happens here</h4>
+        <p>${stage.desc}</p>
+        <h4>Key Activities</h4>
+        <ul>${stage.activities.map(a => `<li>${a}</li>`).join('')}</ul>
+        <h4>Common Tools</h4>
+        <ul>${stage.tools.map(t => `<li>${t}</li>`).join('')}</ul>
+      </div>
+    `;
+    wrap.querySelector('.stage-bar').addEventListener('click', () => {
+      const detail = document.getElementById('stage-' + i);
+      const isOpen = detail.classList.contains('open');
+      document.querySelectorAll('.stage-detail').forEach(d => d.classList.remove('open'));
+      document.querySelectorAll('.funnel-stage').forEach(s => s.classList.remove('selected'));
+      if (!isOpen) {
+        detail.classList.add('open');
+        wrap.classList.add('selected');
+      }
+    });
+    container.appendChild(wrap);
+  });
+}
+
+// --- COLLECTION ---
+function renderCollection() {
+  const c = document.getElementById('coll-methods');
+  collectionMethods.forEach(m => {
+    c.innerHTML += `
+      <div class="coll-card">
+        <span class="icon">${m.icon}</span>
+        <h3>${m.name}</h3>
+        <p>${m.desc}</p>
+        <div class="examples">e.g. ${m.examples}</div>
+      </div>
+    `;
+  });
+}
+
+// --- SCORING ---
+let activeMethod = null;
+function renderScoring() {
+  const grid = document.getElementById('scoring-grid');
+  scoringMethods.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'method-card';
+    card.id = 'mc-' + m.id;
+    card.innerHTML = `
+      <div class="m-tag">${m.tag}</div>
+      <h3>${m.name}</h3>
+      <p>${m.short}</p>
+    `;
+    card.addEventListener('click', () => showMethod(m));
+    grid.appendChild(card);
+  });
+}
+
+function showMethod(m) {
+  document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active-card'));
+  document.getElementById('mc-' + m.id).classList.add('active-card');
+  const detail = document.getElementById('method-detail');
+  detail.classList.add('open');
+  detail.innerHTML = `
+    <h3>${m.name}</h3>
+    <div class="sub">${m.tag} approach</div>
+    <h4 style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;">Scoring Criteria & Typical Weights</h4>
+    <div class="criteria-list">
+      ${m.criteria.map(c => `
+        <div class="criterion">
+          <div class="criterion-name">${c.name}</div>
+          <div class="criterion-bar-wrap"><div class="criterion-bar" style="width:${c.weight}%"></div></div>
+          <div class="criterion-weight">${c.weight}%</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>Strengths</h4>
+        <ul>${m.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div class="cons">
+        <h4>Limitations</h4>
+        <ul>${m.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+      </div>
+    </div>
+  `;
+}
+
+// --- SIMULATOR ---
+let selectedIdea = null;
+let weights = {};
+
+function renderSimulator() {
+  criteria.forEach(c => weights[c.key] = c.weight);
+
+  const list = document.getElementById('idea-list');
+  ideas.forEach((idea, i) => {
+    const el = document.createElement('div');
+    el.className = 'idea-item';
+    el.id = 'idea-' + i;
+    el.innerHTML = `
+      <div>
+        <div class="idea-name">${idea.name}</div>
+        <div class="idea-category">${idea.cat}</div>
+      </div>
+      <div class="idea-score-preview">—</div>
+    `;
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.idea-item').forEach(e => e.classList.remove('selected-idea'));
+      el.classList.add('selected-idea');
+      selectedIdea = idea;
+      updateScore();
+    });
+    list.appendChild(el);
+  });
+
+  const sliders = document.getElementById('sliders');
+  criteria.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'score-slider-group';
+    div.innerHTML = `
+      <label>${c.label} <span id="w-${c.key}">${c.weight}%</span></label>
+      <input type="range" min="0" max="100" value="${c.weight}" id="s-${c.key}">
+    `;
+    div.querySelector('input').addEventListener('input', (e) => {
+      weights[c.key] = parseInt(e.target.value);
+      document.getElementById('w-' + c.key).textContent = weights[c.key] + '%';
+      updateScore();
+      updateAllPreviews();
+    });
+    sliders.appendChild(div);
+  });
+}
+
+function updateScore() {
+  if (!selectedIdea) return;
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+  if (totalWeight === 0) return;
+  let score = 0;
+  criteria.forEach(c => {
+    score += (selectedIdea.scores[c.key] * weights[c.key]) / totalWeight;
+  });
+  score = Math.round(score);
+  document.getElementById('total-score').textContent = score;
+  const verdicts = score >= 75 ? ['🟢 ADVANCE', 'Strong candidate — proceed to next gate'] :
+                   score >= 55 ? ['🟡 DEVELOP FURTHER', 'Potential shown — needs more work'] :
+                   ['🔴 PARK / KILL', 'Insufficient score — reconsider or shelve'];
+  document.getElementById('verdict').textContent = verdicts[0] + ' — ' + verdicts[1];
+}
+
+function updateAllPreviews() {
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+  ideas.forEach((idea, i) => {
+    let score = 0;
+    criteria.forEach(c => {
+      score += (idea.scores[c.key] * weights[c.key]) / (totalWeight || 1);
+    });
+    const el = document.querySelector('#idea-' + i + ' .idea-score-preview');
+    if (el) el.textContent = Math.round(score);
+  });
+}
+
+// --- FRAMEWORKS ---
+function renderFrameworks() {
+  const container = document.getElementById('frameworks-list');
+  frameworks.forEach(f => {
+    container.innerHTML += `
+      <div class="timeline-item">
+        <div class="phase-tag">${f.phase}</div>
+        <h3>${f.name}</h3>
+        <p>${f.desc}</p>
+        <div class="tools">
+          ${f.tools.map(t => `<span class="tool-pill">${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ======================== INIT ========================
+renderFunnel();
+renderCollection();
+renderScoring();
+renderSimulator();
+renderFrameworks();
+</script>
+</body>
+</html>
