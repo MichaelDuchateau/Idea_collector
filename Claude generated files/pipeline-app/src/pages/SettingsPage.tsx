@@ -5,8 +5,9 @@ import { useAppStore } from '../store/appStore';
 import ScorecardEditor from '../components/settings/ScorecardEditor';
 import ThresholdEditor from '../components/settings/ThresholdEditor';
 import ObsidianSettings from '../components/settings/ObsidianSettings';
+import BackupSettings from '../components/settings/BackupSettings';
 
-type Tab = 'scorecard' | 'thresholds' | 'obsidian' | 'general';
+type Tab = 'scorecard' | 'thresholds' | 'obsidian' | 'general' | 'backup';
 
 export default function SettingsPage() {
   const { settings, loadSettings } = useAppStore();
@@ -35,6 +36,7 @@ export default function SettingsPage() {
     { key: 'thresholds', label: 'Thresholds' },
     { key: 'obsidian',   label: 'Obsidian' },
     { key: 'general',    label: 'General' },
+    { key: 'backup',     label: 'Backup' },
   ];
 
   return (
@@ -76,6 +78,13 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 mb-4">Score Band Thresholds</h2>
           <ThresholdEditor settings={settings} onChanged={loadSettings} />
+        </div>
+      )}
+
+      {tab === 'backup' && (
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Backup & Restore</h2>
+          <BackupSettings />
         </div>
       )}
 

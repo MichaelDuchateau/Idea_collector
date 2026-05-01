@@ -1,5 +1,6 @@
 use crate::AppDb;
 use serde::{Deserialize, Serialize};
+use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct SettingRow {
@@ -94,4 +95,34 @@ pub async fn get_activity_log(
     .await
     .map_err(|e| e.to_string())?;
     Ok(rows)
+}
+
+#[tauri::command]
+pub async fn get_db_path(app: tauri::AppHandle) -> Result<String, String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let db_path = app_dir.join("pipeline.db");
+    Ok(db_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn backup_db(app: tauri::AppHandle, dest: String) -> Result<(), String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let src = app_dir.join("pipeline.db");
+    std::fs::copy(&src, &dest).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn restore_db(
+    app: tauri::AppHandle,
+    db: tauri::State<'_, AppDb>,
+    src: String,
+) -> Result<(), String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let dest = app_dir.join("pipeline.db");
+
+    // Close all connections before overwriting
+    db.0.close().await;
+    std::fs::copy(&src, &dest).map_err(|e| e.to_string())?;
+    Ok(())
 }

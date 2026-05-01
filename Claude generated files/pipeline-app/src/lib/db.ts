@@ -92,3 +92,12 @@ export const saveSetting = (key: string, value: string) =>
 
 export const getActivityLog = (ideaId?: number, limit?: number) =>
   invoke<ActivityLogEntry[]>('get_activity_log', { ideaId, limit });
+
+export const getDbPath = () =>
+  invoke<string>('get_db_path');
+
+export const backupDb = (dest: string) =>
+  invoke<void>('backup_db', { dest });
+
+export const restoreDb = (src: string) =>
+  invoke<void>('restore_db', { src });

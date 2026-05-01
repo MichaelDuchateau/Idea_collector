@@ -1,8 +1,13 @@
+import { useAppStore } from '../store/appStore';
+import ReportsDashboard from '../components/reports/ReportsDashboard';
+
 export default function ReportsPage() {
-  return (
-    <div>
-      <h1 className="text-xl font-semibold text-gray-900 mb-4">Reports</h1>
-      <p className="text-sm text-gray-500">Dashboard — Phase 4.</p>
-    </div>
-  );
+  const { ideas, settings } = useAppStore();
+
+  const thresholds = {
+    score_threshold_green: settings?.score_threshold_green ?? 75,
+    score_threshold_amber: settings?.score_threshold_amber ?? 50,
+  };
+
+  return <ReportsDashboard ideas={ideas} settings={thresholds} />;
 }

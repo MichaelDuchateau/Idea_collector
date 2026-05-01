@@ -6,7 +6,10 @@ import PipelinePage from './pages/PipelinePage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
+import OnboardingModal from './components/OnboardingModal';
 import { useAppStore } from './store/appStore';
+import { getCriteria } from './lib/db';
+import type { ScorecardCriterion } from './types';
 
 const router = createBrowserRouter([
   {
@@ -24,11 +27,30 @@ const router = createBrowserRouter([
 
 export default function App() {
   const { loadSettings, loadIdeas } = useAppStore();
-  const [ready, setReady] = useState(false);
+  const [ready, setReady]               = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [criteria, setCriteria]         = useState<ScorecardCriterion[]>([]);
+
+  const { settings } = useAppStore();
 
   useEffect(() => {
-    Promise.all([loadSettings(), loadIdeas()]).finally(() => setReady(true));
+    const init = async () => {
+      await Promise.all([loadSettings(), loadIdeas()]);
+      setReady(true);
+    };
+    init();
   }, []);
+
+  // Show onboarding when settings load and user name is still the default
+  useEffect(() => {
+    if (!ready || showOnboarding) return;
+    if (settings && settings.user_name === 'User') {
+      getCriteria().then(c => {
+        setCriteria(c);
+        setShowOnboarding(true);
+      }).catch(() => {});
+    }
+  }, [ready, settings]);
 
   if (!ready) {
     return (
@@ -38,5 +60,15 @@ export default function App() {
     );
   }
 
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      {showOnboarding && (
+        <OnboardingModal
+          criteria={criteria}
+          onDone={() => setShowOnboarding(false)}
+        />
+      )}
+    </>
+  );
 }
